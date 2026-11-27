@@ -23,6 +23,22 @@ Whether a planned price change is expected to raise revenue per unit, and whethe
 
 **No randomised price data is available here, so the readout has not been applied to any real test.** The notebook will run only once a real experiment log is attached in a Kaggle Notebook. Until then, these are code and tests only. The candidate datasets are observational or synthetic, so they cannot support a causal price claim.
 
+## Key charts
+
+These charts check the estimators on **simulated data with a known truth** (seed 42). They show the method behaves as expected. They are **not** a price-test result, and no effect is estimated.
+
+![Null sampling distribution of the unadjusted and CUPED estimates](reports/figures/sim_null_sampling.png)
+
+*Null sampling distribution of the estimated effect when the true effect is 0 (1000 simulated tests, 1000 units per arm, ρ = 0.7).* CUPED is tighter than the unadjusted estimate (sd 0.097 against 0.130), so the same test gives a narrower CI.
+
+![CUPED variance ratio against 1 − ρ²](reports/figures/sim_variance_ratio.png)
+
+*Variance of the CUPED estimate relative to the unadjusted one, against the correlation ρ with the pre-period covariate.* The simulated ratio follows the theoretical 1 − ρ², so the gain depends on how well the pre-period covariate predicts revenue. A weak covariate gives little gain.
+
+![CI coverage by sample size](reports/figures/sim_ci_coverage.png)
+
+*Share of 95% CIs that contain the known effect (0.2), by units per arm (500 tests per point, ρ = 0.7).* Coverage stays between about 0.93 and 0.97 at every size, so the nominal 95% intervals are roughly calibrated. The gap from 0.95 is within Monte Carlo error for 500 tests.
+
 ## Reproduce
 
 Nothing is downloaded. Data is read in place from `/kaggle/input/<slug>/` inside a Kaggle Notebook.
@@ -33,7 +49,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-The notebook was **not executed locally**, because the data is not on this machine. `notebooks/ab_readout.py` is the source (jupytext percent format), and `notebooks/ab_readout.ipynb` is its unexecuted conversion. It fails with a clear error until the dataset slug is set and the file is attached.
+`notebooks/ab_readout.py` is the source (jupytext percent format), and `notebooks/ab_readout.ipynb` is its conversion with outputs. Section 0 (simulated method checks) runs locally and writes the `sim_*.png` charts to `reports/figures/`. The real-data sections stop with a clear `FileNotFoundError` until the dataset slug is set and the file is attached in a Kaggle Notebook.
 
 ## Layout
 
@@ -43,6 +59,6 @@ src/dp_abtest/guardrails.py   sample_ratio_mismatch, check_guardrails, pre_perio
 tests/test_readout.py         hand-computed Welch CI, CUPED algebra, variance reduction, guardrails
 notebooks/ab_readout.py       readout skeleton that reads /kaggle/input (jupytext percent format)
 notebooks/ab_readout.ipynb    unexecuted notebook
-reports/figures/              figures; empty until the notebook runs on real data
+reports/figures/              sim_*.png (simulated method checks); arm_revenue_ci.png once run on real data
 data/README.md                candidate review, expected input schema, publication rule
 ```
